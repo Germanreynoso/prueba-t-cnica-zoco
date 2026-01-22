@@ -1,0 +1,8 @@
+**/.git
+**/.vs
+**/bin
+**/obj
+**/out
+**/.vscode
+FrontendApp/
+node_modules/
