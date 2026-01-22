@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -9,8 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (token && token !== "dummy-token-for-testing") {
-            // Normal decoding if we had a real token
+        if (token) {
             try {
                 const base64Url = token.split('.')[1];
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -20,19 +19,14 @@ export const AuthProvider = ({ children }) => {
 
                 const decoded = JSON.parse(jsonPayload);
                 setUser({
-                    id: decoded.sub,
+                    id: decoded.sub || decoded.nameid,
                     username: decoded.unique_name,
                     role: decoded.role
                 });
             } catch (e) {
                 console.error("Invalid token", e);
-            }
-        } else if (token === "dummy-token-for-testing") {
-            // If it's the dummy token, we'll wait for the login response to set the user
-            // or just keep the user from sessionStorage if we stored it
-            const storedUser = sessionStorage.getItem('user');
-            if (storedUser) {
-                setUser(JSON.parse(storedUser));
+                sessionStorage.removeItem('token');
+                setToken(null);
             }
         }
         setLoading(false);
@@ -40,7 +34,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            const response = await axios.post('http://localhost:5152/api/auth/login', { usernameOrEmail: username, password });
+            const response = await api.post('/auth/login', { usernameOrEmail: username, password });
             const { token, user } = response.data;
             sessionStorage.setItem('token', token);
             sessionStorage.setItem('user', JSON.stringify(user));
@@ -55,9 +49,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             if (token) {
-                await axios.post('http://localhost:5152/api/auth/logout', {}, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.post('/auth/logout');
             }
         } catch (error) {
             console.error("Logout error", error);
