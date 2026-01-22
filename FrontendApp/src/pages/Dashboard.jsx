@@ -69,13 +69,9 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo/Brand */}
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-accent-600/20 border border-accent-500/30 flex items-center justify-center">
-                                <svg className="w-4 h-4 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                </svg>
-                            </div>
-                            <span className="text-lg font-semibold text-white hidden sm:block">
-                                User Management
+                            <img src="/logo.png" alt="Zoco Logo" className="w-8 h-8 object-contain" />
+                            <span className="text-lg font-bold tracking-tight text-white hidden sm:block">
+                                ZOCO
                             </span>
                         </div>
 
@@ -171,24 +167,6 @@ const AdminView = ({ users, refresh, openModal }) => {
                 <StatCard
                     label="Administradores"
                     value={users.filter(u => u.role === 0).length}
-                    icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                    }
-                />
-                <StatCard
-                    label="Usuarios"
-                    value={users.filter(u => u.role === 1).length}
-                    icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    }
-                />
-                <StatCard
-                    label="Activos Hoy"
-                    value="-"
                     icon={
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />

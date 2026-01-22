@@ -1,54 +1,61 @@
-# Full Stack User Management System (.NET + React)
+# 🚀 Prueba Técnica - Full Stack Developer (.NET + React)
 
-Este proyecto es una aplicación web Full Stack para gestionar usuarios, sus estudios y direcciones personales.
+Esta es una solución integral para la gestión de usuarios, estudios y direcciones, cumpliendo con todos los requisitos técnicos y de seguridad solicitados.
 
-## Tecnologías Utilizadas
+## 🛠️ Tecnologías Utilizadas
 
 ### Backend
-- .NET 6 Core Web API
-- Entity Framework Core
-- SQL Server
-- JWT Authentication
-- Swagger
-- BCrypt.Net para hashing de contraseñas
+- **Framework:** .NET 8 (C#)
+- **ORM:** Entity Framework Core
+- **Base de Datos:** SQL Server
+- **Autenticación:** JWT (JSON Web Tokens)
+- **Documentación:** Swagger UI
+- **Arquitectura:** Patrón Repository y Services (Capas)
 
 ### Frontend
-- React (Vite)
-- Tailwind CSS
-- React Router DOM
-- Context API
-- Axios
+- **Framework:** React (Vite)
+- **Estilos:** Tailwind CSS
+- **Gestión de Estado:** Context API
+- **Enrutamiento:** React Router DOM
+- **HTTP Client:** Axios
 
-## Requisitos Previos
-- .NET 6 SDK o superior
-- Node.js (v16+)
-- SQL Server (LocalDB o instancia completa)
+---
 
-## Instrucciones para el Backend
+## 🌐 Deploys (Demostrativos)
+Aunque la consigna requiere ejecución local, se han realizado despliegues para demostrar habilidades en DevOps y Docker:
+- **Frontend (Netlify):** [https://germanreynoso-zoco.netlify.app/](https://germanreynoso-zoco.netlify.app/)
+- **Backend (Render + Docker):** [https://prueba-t-cnica-zoco.onrender.com/](https://prueba-t-cnica-zoco.onrender.com/) *(Nota: El backend en Render es demostrativo de arquitectura y Swagger; para funcionalidad completa requiere conexión a la DB local).*
 
-1. Navega a la carpeta `BackendApi`:
+---
+
+## ⚙️ Configuración Local
+
+### 1. Requisitos Previos
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (Express o LocalDB)
+- [Node.js](https://nodejs.org/) (v18 o superior)
+
+### 2. Configuración del Backend
+1. Navega a la carpeta del backend:
    ```bash
    cd BackendApi
    ```
-2. Restaura las dependencias:
-   ```bash
-   dotnet restore
+2. Configura tu cadena de conexión en `appsettings.json`. Por defecto está configurada para buscar una instancia local:
+   ```json
+   "DefaultConnection": "Server=DESKTOP-QL9OU6S;Database=BackendDb;Trusted_Connection=True;TrustServerCertificate=True"
    ```
-3. Configura la cadena de conexión en `appsettings.json` si es necesario. Por defecto usa `(localdb)\\mssqllocaldb`.
-4. Ejecuta las migraciones para crear la base de datos:
+3. Ejecuta las migraciones para crear la base de datos y los datos iniciales (Seed):
    ```bash
    dotnet ef database update
    ```
-   *Nota: Si no tienes `dotnet-ef` instalado, puedes instalarlo con `dotnet tool install --global dotnet-ef`.*
-5. Ejecuta la aplicación:
+4. Inicia la API:
    ```bash
    dotnet run
    ```
-   La API estará disponible en `https://localhost:7287` (o el puerto configurado en `launchSettings.json`).
+   *La API estará disponible en `http://localhost:5152` y Swagger en `http://localhost:5152/index.html`*
 
-## Instrucciones para el Frontend
-
-1. Navega a la carpeta `FrontendApp`:
+### 3. Configuración del Frontend
+1. Navega a la carpeta del frontend:
    ```bash
    cd FrontendApp
    ```
@@ -56,21 +63,51 @@ Este proyecto es una aplicación web Full Stack para gestionar usuarios, sus est
    ```bash
    npm install
    ```
-3. Ejecuta la aplicación en modo desarrollo:
+3. Crea un archivo `.env` en la raíz de `FrontendApp` (si no existe) con la URL de la API local:
+   ```env
+   VITE_API_URL=http://localhost:5152/api
+   ```
+4. Inicia la aplicación:
    ```bash
    npm run dev
    ```
-4. Abre tu navegador en `http://localhost:5173`.
 
-## Credenciales de Prueba (Sugeridas tras migraciones)
-- **Admin**: `admin` / `admin123`
-- **Usuario**: `usuario` / `user123`
+---
 
-## Funcionalidades
-- **Autenticación**: Login y Logout con persistencia en `sessionStorage`.
-- **Roles**:
-  - **Admin**: Puede ver, crear, editar y eliminar cualquier usuario.
-  - **Usuario**: Solo puede ver y editar su propio perfil, estudios y dirección.
-- **Seguridad**: Middleware de propiedad (Ownership) que valida que un usuario solo acceda a sus propios recursos.
-- **Registro de Sesión**: Se guardan logs de inicio y cierre de sesión en la base de datos.
-- **Diseño Responsivo**: Interfaz moderna construida con Tailwind CSS, adaptable a móviles.
+## 🔑 Credenciales de Acceso
+La base de datos se inicializa automáticamente con los siguientes usuarios para pruebas:
+
+| Rol | Usuario | Contraseña |
+| :--- | :--- | :--- |
+| **Admin** | `admin` | `admin123` |
+| **Usuario** | `usuario` | `user123` |
+
+---
+
+## 🛡️ Funcionalidades Destacadas
+- **Seguridad:** Middleware de autorización que valida no solo el rol, sino también la propiedad de los recursos (un usuario no puede editar estudios de otro).
+- **Sesión:** Registro automático en la tabla `SessionLogs` al iniciar y cerrar sesión, incluyendo captura de IP.
+- **Validaciones:** Control estricto de nulos y tipos de datos en .NET 8.
+- **Diseño:** Interfaz moderna, responsiva y con estados de carga.
+
+---
+
+## 📁 Estructura del Proyecto
+```text
+├── BackendApi/
+│   ├── Controllers/    # Endpoints de la API
+│   ├── Models/         # Entidades de base de datos
+│   ├── Repositories/   # Acceso a datos (Patrón Repository)
+│   ├── Services/       # Lógica de negocio
+│   └── DTOs/           # Objetos de transferencia de datos
+├── FrontendApp/
+│   ├── src/
+│   │   ├── context/    # AuthContext (JWT & SessionStorage)
+│   │   ├── components/ # Componentes reutilizables
+│   │   ├── pages/      # Vistas (Dashboard, Login, etc.)
+│   │   └── services/   # Cliente API (Axios)
+└── netlify.toml        # Configuración de deploy
+```
+
+---
+*Desarrollado por German Reynoso para la prueba técnica de Zoco.*
