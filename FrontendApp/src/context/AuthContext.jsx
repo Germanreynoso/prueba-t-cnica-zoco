@@ -52,11 +52,21 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
+    const logout = async () => {
+        try {
+            if (token) {
+                await axios.post('http://localhost:5152/api/auth/logout', {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+        } catch (error) {
+            console.error("Logout error", error);
+        } finally {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            setToken(null);
+            setUser(null);
+        }
     };
 
     return (

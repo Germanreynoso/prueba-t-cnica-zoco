@@ -1,32 +1,63 @@
 using BackendApi.Models;
 using BackendApi.DTOs;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using BackendApi.Repositories;
+using System.Linq; // Added for FirstOrDefault
+using System.Threading.Tasks; // Added for Task
+using System; // Added for DateTime
 
 namespace BackendApi.Services;
 
 public class AuthService
 {
-    // Hardcoded users for testing without DB
-    private static readonly List<User> _users = new List<User>
-    {
-        new User { Id = 1, Username = "admin", Email = "admin@example.com", PasswordHash = "admin123", FirstName = "Admin", LastName = "System", Role = UserRole.Admin },
-        new User { Id = 2, Username = "usuario", Email = "user@example.com", PasswordHash = "user123", FirstName = "Juan", LastName = "Perez", Role = UserRole.User }
-    };
+    private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration;
 
-    public string GenerateJwtToken(User user)
+    public AuthService(IUserRepository userRepository, IConfiguration configuration)
     {
-        // Return a dummy token for now
-        return "dummy-token-for-testing";
+        _userRepository = userRepository;
+        _configuration = configuration;
     }
 
-    public User Authenticate(LoginDto loginDto)
+    public async Task<string> GenerateJwtToken(User user)
     {
-        // Simple check without hashing for now
-        return _users.FirstOrDefault(u => 
-            (u.Username == loginDto.UsernameOrEmail || u.Email == loginDto.UsernameOrEmail) 
-            && u.PasswordHash == loginDto.Password);
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            }),
+            Expires = DateTime.UtcNow.AddDays(7),
+            Issuer = jwtSettings["Issuer"],
+            Audience = jwtSettings["Audience"],
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 
-    public List<User> GetMockUsers() => _users;
+    public async Task<User?> Authenticate(LoginDto loginDto)
+    {
+        var users = await _userRepository.GetAllAsync();
+        var user = users.FirstOrDefault(u => 
+            u.Username == loginDto.UsernameOrEmail || u.Email == loginDto.UsernameOrEmail);
+
+        if (user != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+        {
+            return user;
+        }
+
+        return null;
+    }
 }
