@@ -13,7 +13,7 @@ public class SessionLog
 
     [Required]
     [MaxLength(50)]
-    public string Action { get; set; }
+    public string Action { get; set; } = null!;
 
     [Required]
     public DateTime LoginTime { get; set; }
@@ -21,8 +21,8 @@ public class SessionLog
     public DateTime? LogoutTime { get; set; }
 
     [MaxLength(45)]
-    public string IpAddress { get; set; }
+    public string IpAddress { get; set; } = null!;
 
     [ForeignKey("UserId")]
-    public User User { get; set; }
+    public User? User { get; set; }
 }

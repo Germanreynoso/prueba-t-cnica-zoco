@@ -4246,11 +4246,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\BackendApi.csproj",
+      "projectUniqueName": "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\BackendApi.csproj",
       "projectName": "BackendApi",
-      "projectPath": "c:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\BackendApi.csproj",
+      "projectPath": "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\BackendApi.csproj",
       "packagesPath": "C:\\Users\\NGROD\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\obj\\",
+      "outputPath": "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\NGROD\\AppData\\Roaming\\NuGet\\NuGet.Config"

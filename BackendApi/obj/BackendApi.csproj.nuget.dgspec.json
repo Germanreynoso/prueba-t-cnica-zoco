@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\BackendApi.csproj": {}
+    "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\BackendApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\BackendApi.csproj": {
+    "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\BackendApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\BackendApi.csproj",
+        "projectUniqueName": "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\BackendApi.csproj",
         "projectName": "BackendApi",
-        "projectPath": "C:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\BackendApi.csproj",
+        "projectPath": "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\BackendApi.csproj",
         "packagesPath": "C:\\Users\\NGROD\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\NGROD\\Desktop\\Prueba técnica\\BackendApi\\obj\\",
+        "outputPath": "C:\\Users\\NGROD\\Desktop\\prueba-t-cnica-zoco\\BackendApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\NGROD\\AppData\\Roaming\\NuGet\\NuGet.Config"

@@ -25,7 +25,7 @@ public class SessionService
             UserId = userId,
             Action = "Login",
             LoginTime = DateTime.UtcNow,
-            IpAddress = ipAddress
+            IpAddress = ipAddress ?? "Unknown"
         };
         
         _context.SessionLogs.Add(sessionLog);

@@ -16,21 +16,21 @@ public class User
 
     [Required]
     [MaxLength(50)]
-    public string Username { get; set; }
+    public string Username { get; set; } = null!;
 
     [Required]
     [EmailAddress]
     [MaxLength(100)]
-    public string Email { get; set; }
+    public string Email { get; set; } = null!;
 
     [Required]
-    public string PasswordHash { get; set; }
+    public string PasswordHash { get; set; } = null!;
 
     [MaxLength(50)]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     [MaxLength(50)]
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -38,7 +38,7 @@ public class User
     public UserRole Role { get; set; }
 
     // Relationships
-    public Address Address { get; set; }
+    public Address? Address { get; set; }
     public ICollection<Study> Studies { get; set; } = new List<Study>();
     public ICollection<SessionLog> SessionLogs { get; set; } = new List<SessionLog>();
 }

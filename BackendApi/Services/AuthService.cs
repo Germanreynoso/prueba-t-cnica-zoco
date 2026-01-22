@@ -6,9 +6,9 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using BackendApi.Repositories;
-using System.Linq; // Added for FirstOrDefault
-using System.Threading.Tasks; // Added for Task
-using System; // Added for DateTime
+using System.Linq;
+using System.Threading.Tasks;
+using System;
 
 namespace BackendApi.Services;
 
@@ -23,7 +23,7 @@ public class AuthService
         _configuration = configuration;
     }
 
-    public async Task<string> GenerateJwtToken(User user)
+    public string GenerateJwtToken(User user)
     {
         var jwtSettings = _configuration.GetSection("Jwt");
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);

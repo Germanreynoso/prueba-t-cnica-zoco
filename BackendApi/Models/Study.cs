@@ -10,9 +10,9 @@ public class Study
 
     [Required]
     [MaxLength(200)]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -20,5 +20,5 @@ public class Study
     public int UserId { get; set; }
 
     [ForeignKey("UserId")]
-    public User User { get; set; }
+    public User? User { get; set; }
 }

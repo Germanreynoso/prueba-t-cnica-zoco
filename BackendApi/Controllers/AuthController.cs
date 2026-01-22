@@ -3,6 +3,8 @@ using BackendApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System;
+using System.Threading.Tasks;
 
 namespace BackendApi.Controllers;
 
@@ -22,18 +24,38 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto loginDto)
     {
-        var user = await _authService.Authenticate(loginDto);
-        if (user == null)
+        try
         {
-            return Unauthorized(new { message = "Invalid username or password" });
+            var user = await _authService.Authenticate(loginDto);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Invalid username or password" });
+            }
+
+            var token = _authService.GenerateJwtToken(user);
+            
+            // Log the session
+            _sessionService.LogLogin(user.Id);
+
+            // Return only necessary user info (avoiding PasswordHash and cycles)
+            return Ok(new 
+            { 
+                token, 
+                user = new 
+                { 
+                    user.Id, 
+                    user.Username, 
+                    user.Email, 
+                    user.FirstName, 
+                    user.LastName, 
+                    user.Role 
+                } 
+            });
         }
-
-        var token = await _authService.GenerateJwtToken(user);
-        
-        // Log the session
-        _sessionService.LogLogin(user.Id);
-
-        return Ok(new { token, user });
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message, detail = ex.InnerException?.Message });
+        }
     }
 
     [Authorize]
