@@ -242,6 +242,18 @@ const AdminView = ({ users, refresh, openModal }) => {
 const UserView = ({ profile, refresh, openModal }) => {
     if (!profile) return null;
 
+    const handleDeleteStudy = async (id) => {
+        if (window.confirm('¿Estás seguro de eliminar este estudio?')) {
+            try {
+                await api.delete(`/studies/${id}`);
+                refresh();
+            } catch (error) {
+                console.error("Error deleting study:", error);
+                alert("Error al eliminar el estudio");
+            }
+        }
+    };
+
     return (
         <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
             {/* Profile Card */}
@@ -319,14 +331,26 @@ const UserView = ({ profile, refresh, openModal }) => {
                                         {s.description}
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => openModal('study', s)}
-                                    className="btn-ghost p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                </button>
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => openModal('study', s)}
+                                        className="btn-ghost p-2 text-gray-400 hover:text-white"
+                                        title="Editar"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteStudy(s.id)}
+                                        className="btn-ghost p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                        title="Eliminar"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         ))
                     ) : (
@@ -440,11 +464,17 @@ const StudyForm = ({ item, userId, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        const data = { title, description, userId };
-        if (item) await api.put(`/studies/${item.id}`, data);
-        else await api.post('/studies', data);
-        setIsSubmitting(false);
-        onSuccess();
+        try {
+            const data = { title, description, userId: parseInt(userId) };
+            if (item) await api.put(`/studies/${item.id}`, data);
+            else await api.post('/studies', data);
+            onSuccess();
+        } catch (error) {
+            console.error("Error saving study:", error);
+            alert("Error al guardar el estudio. Por favor intente nuevamente.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -494,11 +524,17 @@ const AddressForm = ({ item, userId, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        const data = { street, city, state, zipCode, country, userId };
-        if (item) await api.put(`/addresses/${item.id}`, data);
-        else await api.post('/addresses', data);
-        setIsSubmitting(false);
-        onSuccess();
+        try {
+            const data = { street, city, state, zipCode, country, userId: parseInt(userId) };
+            if (item) await api.put(`/addresses/${item.id}`, data);
+            else await api.post('/addresses', data);
+            onSuccess();
+        } catch (error) {
+            console.error("Error saving address:", error);
+            alert("Error al guardar la dirección. Por favor intente nuevamente.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -588,13 +624,19 @@ const UserForm = ({ item, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        const data = { username, email, firstName, lastName, role: parseInt(role) };
-        if (password) data.password = password;
+        try {
+            const data = { username, email, firstName, lastName, role: parseInt(role) };
+            if (password) data.password = password;
 
-        if (item) await api.put(`/users/${item.id}`, data);
-        else await api.post('/users', data);
-        setIsSubmitting(false);
-        onSuccess();
+            if (item) await api.put(`/users/${item.id}`, data);
+            else await api.post('/users', data);
+            onSuccess();
+        } catch (error) {
+            console.error("Error saving user:", error);
+            alert("Error al guardar el usuario. Por favor intente nuevamente.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (

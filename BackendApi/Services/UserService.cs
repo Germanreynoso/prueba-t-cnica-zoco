@@ -31,7 +31,7 @@ public class UserService : IUserService
 
     public async Task<User?> GetUserByIdAsync(int id)
     {
-        return await _userRepository.GetByIdAsync(id);
+        return await _userRepository.GetByIdWithDetailsAsync(id);
     }
 
     public async Task<User> CreateUserAsync(CreateUserDto dto)
