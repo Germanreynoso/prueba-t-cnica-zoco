@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -17,15 +18,15 @@ namespace BackendApi.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -36,14 +37,14 @@ namespace BackendApi.Migrations
                 name: "Addresses",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Street = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    State = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    ZipCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Street = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    State = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    ZipCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Country = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,13 +61,13 @@ namespace BackendApi.Migrations
                 name: "SessionLogs",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Action = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LoginTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LogoutTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IpAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Action = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    LoginTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LogoutTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -83,12 +84,12 @@ namespace BackendApi.Migrations
                 name: "Studies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -106,8 +107,8 @@ namespace BackendApi.Migrations
                 columns: new[] { "Id", "CreatedAt", "Email", "FirstName", "LastName", "PasswordHash", "Role", "Username" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@example.com", "Admin", "System", "$2a$11$ssUplNDkYhF8p1BD7HfN8uWe2HNmDsvA1dw9FIv5JedNK32mxOpWC", 0, "admin" },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "user@example.com", "Juan", "Perez", "$2a$11$gYLjOxzy./0KMeqmvQPWe.LeLvNpwZuojyv3cj/lm4AjDXoiZ3.Ca", 1, "usuario" }
+                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@example.com", "Admin", "System", "$2a$11$8qSpP8vzn.cf/BCRNYmLbOU49cj2nqPACmP6RlU3DMS2Si6LaRZnW", 0, "admin" },
+                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "user@example.com", "Juan", "Perez", "$2a$11$D2c841Srt/xko5skrwCzGOzBKry5x6r2ZA9xrUrtDaXLC4QEfqL8a", 1, "usuario" }
                 });
 
             migrationBuilder.CreateIndex(
