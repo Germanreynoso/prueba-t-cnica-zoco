@@ -127,6 +127,24 @@ const Dashboard = () => {
 // Admin View
 // ============================================
 const AdminView = ({ users, refresh, openModal }) => {
+    const [sessionLogs, setSessionLogs] = useState([]);
+    const [view, setView] = useState('users'); // 'users' or 'logs'
+
+    useEffect(() => {
+        if (view === 'logs') {
+            fetchLogs();
+        }
+    }, [view]);
+
+    const fetchLogs = async () => {
+        try {
+            const response = await api.get('/sessionlogs');
+            setSessionLogs(response.data);
+        } catch (error) {
+            console.error("Error fetching logs", error);
+        }
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
             await api.delete(`/users/${id}`);
@@ -140,17 +158,41 @@ const AdminView = ({ users, refresh, openModal }) => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-semibold text-white">Panel de Administración</h1>
-                    <p className="text-sm text-gray-500 mt-1">Gestiona los usuarios del sistema</p>
+                    <p className="text-sm text-gray-500 mt-1">Gestiona usuarios y monitorea actividad</p>
                 </div>
-                <button
-                    onClick={() => openModal('user')}
-                    className="btn-primary"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Nuevo Usuario
-                </button>
+                <div className="flex gap-3">
+                    <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-800">
+                        <button
+                            onClick={() => setView('users')}
+                            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'users'
+                                    ? 'bg-gray-800 text-white shadow-sm'
+                                    : 'text-gray-400 hover:text-white'
+                                }`}
+                        >
+                            Usuarios
+                        </button>
+                        <button
+                            onClick={() => setView('logs')}
+                            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'logs'
+                                    ? 'bg-gray-800 text-white shadow-sm'
+                                    : 'text-gray-400 hover:text-white'
+                                }`}
+                        >
+                            Actividad
+                        </button>
+                    </div>
+                    {view === 'users' && (
+                        <button
+                            onClick={() => openModal('user')}
+                            className="btn-primary"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Nuevo Usuario
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Stats row */}
@@ -175,62 +217,119 @@ const AdminView = ({ users, refresh, openModal }) => {
                 />
             </div>
 
-            {/* Users Grid */}
-            {users.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {users.map((u, index) => (
-                        <div
-                            key={u.id}
-                            className="card-interactive p-5 animate-slide-up"
-                            style={{ animationDelay: `${index * 50}ms` }}
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-sm font-medium text-gray-400">
-                                        {u.firstName?.[0]}{u.lastName?.[0]}
+            {/* Content */}
+            {view === 'users' ? (
+                users.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {users.map((u, index) => (
+                            <div
+                                key={u.id}
+                                className="card-interactive p-5 animate-slide-up"
+                                style={{ animationDelay: `${index * 50}ms` }}
+                            >
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-sm font-medium text-gray-400">
+                                            {u.firstName?.[0]}{u.lastName?.[0]}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium text-white">
+                                                {u.firstName} {u.lastName}
+                                            </h3>
+                                            <p className="text-sm text-gray-500">{u.email}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-medium text-white">
-                                            {u.firstName} {u.lastName}
-                                        </h3>
-                                        <p className="text-sm text-gray-500">{u.email}</p>
-                                    </div>
+                                    <span className={u.role === 0 ? 'badge-primary' : 'badge-secondary'}>
+                                        {u.role === 0 ? 'Admin' : 'User'}
+                                    </span>
                                 </div>
-                                <span className={u.role === 0 ? 'badge-primary' : 'badge-secondary'}>
-                                    {u.role === 0 ? 'Admin' : 'User'}
-                                </span>
-                            </div>
 
-                            <div className="flex gap-2 pt-4 border-t border-gray-800">
-                                <button
-                                    onClick={() => openModal('user', u)}
-                                    className="btn-secondary flex-1 text-xs py-2"
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                    Editar
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(u.id)}
-                                    className="btn-danger flex-1 text-xs py-2"
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Eliminar
-                                </button>
+                                <div className="flex gap-2 pt-4 border-t border-gray-800">
+                                    <button
+                                        onClick={() => openModal('user', u)}
+                                        className="btn-secondary flex-1 text-xs py-2"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg>
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(u.id)}
+                                        className="btn-danger flex-1 text-xs py-2"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Eliminar
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <EmptyState
+                        title="Sin usuarios"
+                        description="No hay usuarios registrados aún"
+                        action={() => openModal('user')}
+                        actionLabel="Crear primer usuario"
+                    />
+                )
             ) : (
-                <EmptyState
-                    title="Sin usuarios"
-                    description="No hay usuarios registrados aún"
-                    action={() => openModal('user')}
-                    actionLabel="Crear primer usuario"
-                />
+                <div className="card overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-gray-800/50 text-gray-400 border-b border-gray-800">
+                                <tr>
+                                    <th className="px-6 py-3 font-medium">Usuario</th>
+                                    <th className="px-6 py-3 font-medium">Acción</th>
+                                    <th className="px-6 py-3 font-medium">IP</th>
+                                    <th className="px-6 py-3 font-medium">Inicio</th>
+                                    <th className="px-6 py-3 font-medium">Fin</th>
+                                    <th className="px-6 py-3 font-medium">Duración</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-800">
+                                {sessionLogs.map((log) => {
+                                    const start = new Date(log.loginTime);
+                                    const end = log.logoutTime ? new Date(log.logoutTime) : null;
+                                    const duration = end ? Math.round((end - start) / 1000 / 60) + ' min' : '-';
+
+                                    return (
+                                        <tr key={log.id} className="hover:bg-gray-800/30 transition-colors">
+                                            <td className="px-6 py-4 text-white">
+                                                {log.user?.username || 'Usuario eliminado'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${log.action === 'Login' ? 'bg-green-500/10 text-green-400' : 'bg-blue-500/10 text-blue-400'
+                                                    }`}>
+                                                    {log.action}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-400 font-mono text-xs">
+                                                {log.ipAddress}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-300">
+                                                {start.toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-300">
+                                                {end ? end.toLocaleString() : <span className="text-green-500 text-xs">En línea</span>}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-400">
+                                                {duration}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        {sessionLogs.length === 0 && (
+                            <div className="p-8 text-center text-gray-500">
+                                No hay registros de actividad
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

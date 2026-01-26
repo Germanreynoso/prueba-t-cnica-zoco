@@ -57,4 +57,13 @@ public class SessionService
             _context.SaveChanges();
         }
     }
+    public async System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<SessionLog>> GetAllSessionLogsAsync()
+    {
+        return await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+            Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(
+                _context.SessionLogs.OrderByDescending(s => s.LoginTime), 
+                s => s.User
+            )
+        );
+    }
 }
