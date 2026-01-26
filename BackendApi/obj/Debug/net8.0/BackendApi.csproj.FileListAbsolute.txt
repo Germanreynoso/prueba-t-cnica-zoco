@@ -291,5 +291,3 @@ C:\Users\NGROD\Desktop\prueba-t-cnica-zoco\BackendApi\obj\Debug\net8.0\scopedcss
 C:\Users\NGROD\Desktop\prueba-t-cnica-zoco\BackendApi\obj\Debug\net8.0\BackendApi.csproj.Up2Date
 C:\Users\NGROD\Desktop\prueba-t-cnica-zoco\BackendApi\obj\Debug\net8.0\BackendApi.genruntimeconfig.cache
 C:\Users\NGROD\Desktop\prueba-t-cnica-zoco\BackendApi\obj\Debug\net8.0\ref\BackendApi.dll
-C:\Users\NGROD\Desktop\prueba-t-cnica-zoco\BackendApi\bin\Debug\net8.0\Npgsql.dll
-C:\Users\NGROD\Desktop\prueba-t-cnica-zoco\BackendApi\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll

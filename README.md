@@ -24,7 +24,8 @@ Esta es una solución integral para la gestión de usuarios, estudios y direccio
 ## 🌐 Deploys (Demostrativos)
 Aunque la consigna requiere ejecución local, se han realizado despliegues para demostrar habilidades en DevOps y Docker:
 - **Frontend (Netlify):** [https://germanreynoso-zoco.netlify.app/](https://germanreynoso-zoco.netlify.app/)
-- **Backend (Render + Docker):** [https://prueba-t-cnica-zoco.onrender.com/](https://prueba-t-cnica-zoco.onrender.com/) *(Nota: El backend en Render es demostrativo de arquitectura y Swagger; para funcionalidad completa requiere conexión a la DB local).*
+- **Frontend (Netlify):** [https://germanreynoso-zoco.netlify.app/](https://germanreynoso-zoco.netlify.app/)
+- **Backend:** Ejecución local (ver instrucciones abajo). *Nota: Se optó por mantener el backend local para garantizar la estabilidad de la conexión con SQL Server.*
 
 ---
 
