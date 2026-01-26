@@ -29,6 +29,19 @@ public class UserService : IUserService
         return await _userRepository.GetAllAsync();
     }
 
+    public async Task<PaginatedResult<User>> GetUsersPaginatedAsync(int page, int pageSize, string? searchTerm)
+    {
+        var (items, totalCount) = await _userRepository.GetPaginatedAsync(page, pageSize, searchTerm);
+        
+        return new PaginatedResult<User>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
     public async Task<User?> GetUserByIdAsync(int id)
     {
         return await _userRepository.GetByIdWithDetailsAsync(id);

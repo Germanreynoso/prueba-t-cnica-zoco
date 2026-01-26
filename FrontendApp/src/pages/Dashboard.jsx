@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/Modal';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [users, setUsers] = useState([]);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -14,23 +16,33 @@ const Dashboard = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const navigate = useNavigate();
 
+    // Trigger refresh for AdminView
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
     useEffect(() => {
-        fetchData();
+        if (user && user.role !== 'Admin') {
+            fetchProfile();
+        } else {
+            setLoading(false);
+        }
     }, [user]);
 
-    const fetchData = async () => {
+    const fetchProfile = async () => {
         try {
-            if (user?.role === 'Admin') {
-                const response = await api.get('/users');
-                setUsers(response.data);
-            } else if (user) {
-                const response = await api.get(`/users/${user.id}`);
-                setProfile(response.data);
-            }
+            const response = await api.get(`/users/${user.id}`);
+            setProfile(response.data);
         } catch (error) {
-            console.error("Error fetching data", error);
+            console.error("Error fetching profile", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRefresh = () => {
+        if (user?.role === 'Admin') {
+            setRefreshTrigger(prev => prev + 1);
+        } else {
+            fetchProfile();
         }
     };
 
@@ -62,27 +74,42 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-950">
+        <div className="min-h-screen transition-colors duration-300">
             {/* Navigation */}
-            <nav className="sticky top-0 z-40 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800/50">
+            <nav className="sticky top-0 z-40 bg-[var(--bg-card)] backdrop-blur-xl border-b border-[var(--border-card)]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo/Brand */}
                         <div className="flex items-center gap-3">
                             <img src="/logo.png" alt="Zoco Logo" className="w-8 h-8 object-contain" />
-                            <span className="text-lg font-bold tracking-tight text-white hidden sm:block">
+                            <span className="text-lg font-bold tracking-tight hidden sm:block">
                                 ZOCO
                             </span>
                         </div>
 
                         {/* User info & Logout */}
                         <div className="flex items-center gap-3">
-                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/50 border border-gray-800">
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-body)] hover:bg-[var(--bg-hover)] transition-colors"
+                                title={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                            >
+                                {theme === 'dark' ? (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                    </svg>
+                                )}
+                            </button>
+                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-secondary)]">
                                 <div className="w-2 h-2 rounded-full bg-success-500" />
-                                <span className="text-sm text-gray-400">
-                                    <span className="text-white font-medium">{user?.username}</span>
-                                    <span className="mx-1.5 text-gray-600">•</span>
-                                    <span className="text-gray-500">{user?.role}</span>
+                                <span className="text-sm text-[var(--text-muted)]">
+                                    <span className="font-medium text-[var(--text-body)]">{user?.username}</span>
+                                    <span className="mx-1.5">•</span>
+                                    <span>{user?.role}</span>
                                 </span>
                             </div>
                             <button
@@ -103,9 +130,9 @@ const Dashboard = () => {
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {user?.role === 'Admin' ? (
-                    <AdminView users={users} refresh={fetchData} openModal={openModal} />
+                    <AdminView refreshTrigger={refreshTrigger} openModal={openModal} />
                 ) : (
-                    <UserView profile={profile} refresh={fetchData} openModal={openModal} />
+                    <UserView profile={profile} refresh={fetchProfile} openModal={openModal} />
                 )}
             </main>
 
@@ -115,9 +142,9 @@ const Dashboard = () => {
                 onClose={closeModal}
                 title={selectedItem ? `Editar ${modalType}` : `Agregar ${modalType}`}
             >
-                {modalType === 'study' && <StudyForm item={selectedItem} userId={user?.id} onSuccess={() => { closeModal(); fetchData(); }} />}
-                {modalType === 'address' && <AddressForm item={selectedItem} userId={user?.id} onSuccess={() => { closeModal(); fetchData(); }} />}
-                {modalType === 'user' && <UserForm item={selectedItem} onSuccess={() => { closeModal(); fetchData(); }} />}
+                {modalType === 'study' && <StudyForm item={selectedItem} userId={user?.id} onSuccess={() => { closeModal(); handleRefresh(); }} />}
+                {modalType === 'address' && <AddressForm item={selectedItem} userId={user?.id} onSuccess={() => { closeModal(); handleRefresh(); }} />}
+                {modalType === 'user' && <UserForm item={selectedItem} onSuccess={() => { closeModal(); handleRefresh(); }} />}
             </Modal>
         </div>
     );
@@ -126,15 +153,61 @@ const Dashboard = () => {
 // ============================================
 // Admin View
 // ============================================
-const AdminView = ({ users, refresh, openModal }) => {
+const AdminView = ({ refreshTrigger, openModal }) => {
+    const [users, setUsers] = useState([]);
     const [sessionLogs, setSessionLogs] = useState([]);
     const [view, setView] = useState('users'); // 'users' or 'logs'
 
+    // Pagination & Search State
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+    // Debounce search
     useEffect(() => {
-        if (view === 'logs') {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setPage(1); // Reset to page 1 on search
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        if (view === 'users') {
+            fetchUsers();
+        } else {
             fetchLogs();
         }
-    }, [view]);
+    }, [view, page, debouncedSearch, refreshTrigger]);
+
+    const fetchUsers = async () => {
+        setIsLoadingUsers(true);
+        try {
+            const response = await api.get('/users', {
+                params: {
+                    page,
+                    pageSize: 9, // 9 items grid
+                    search: debouncedSearch
+                }
+            });
+            // Handle both paginated and non-paginated responses for backward compatibility if needed
+            if (response.data.items) {
+                setUsers(response.data.items);
+                setTotalPages(response.data.totalPages);
+                setTotalCount(response.data.totalCount);
+            } else {
+                // Fallback if backend not updated yet
+                setUsers(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching users", error);
+        } finally {
+            setIsLoadingUsers(false);
+        }
+    };
 
     const fetchLogs = async () => {
         try {
@@ -148,7 +221,7 @@ const AdminView = ({ users, refresh, openModal }) => {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar este usuario?')) {
             await api.delete(`/users/${id}`);
-            refresh();
+            fetchUsers();
         }
     };
 
@@ -157,16 +230,16 @@ const AdminView = ({ users, refresh, openModal }) => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-semibold text-white">Panel de Administración</h1>
-                    <p className="text-sm text-gray-500 mt-1">Gestiona usuarios y monitorea actividad</p>
+                    <h1 className="text-2xl font-semibold">Panel de Administración</h1>
+                    <p className="text-sm text-[var(--text-muted)] mt-1">Gestiona usuarios y monitorea actividad</p>
                 </div>
                 <div className="flex gap-3">
-                    <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-800">
+                    <div className="flex bg-[var(--bg-secondary)] rounded-lg p-1 border border-[var(--border-secondary)]">
                         <button
                             onClick={() => setView('users')}
                             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'users'
-                                    ? 'bg-gray-800 text-white shadow-sm'
-                                    : 'text-gray-400 hover:text-white'
+                                ? 'bg-[var(--bg-card)] text-[var(--text-body)] shadow-sm'
+                                : 'text-[var(--text-muted)] hover:text-[var(--text-body)]'
                                 }`}
                         >
                             Usuarios
@@ -174,8 +247,8 @@ const AdminView = ({ users, refresh, openModal }) => {
                         <button
                             onClick={() => setView('logs')}
                             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${view === 'logs'
-                                    ? 'bg-gray-800 text-white shadow-sm'
-                                    : 'text-gray-400 hover:text-white'
+                                ? 'bg-[var(--bg-card)] text-[var(--text-body)] shadow-sm'
+                                : 'text-[var(--text-muted)] hover:text-[var(--text-body)]'
                                 }`}
                         >
                             Actividad
@@ -199,7 +272,7 @@ const AdminView = ({ users, refresh, openModal }) => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
                     label="Total Usuarios"
-                    value={users.length}
+                    value={totalCount}
                     icon={
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -219,67 +292,115 @@ const AdminView = ({ users, refresh, openModal }) => {
 
             {/* Content */}
             {view === 'users' ? (
-                users.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {users.map((u, index) => (
-                            <div
-                                key={u.id}
-                                className="card-interactive p-5 animate-slide-up"
-                                style={{ animationDelay: `${index * 50}ms` }}
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-sm font-medium text-gray-400">
-                                            {u.firstName?.[0]}{u.lastName?.[0]}
+                <div className="space-y-4">
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg className="h-5 w-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            className="input-base pl-10"
+                            placeholder="Buscar usuarios por nombre, email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    {isLoadingUsers ? (
+                        <div className="py-12 text-center">
+                            <div className="w-8 h-8 border-2 border-accent-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-[var(--text-muted)]">Cargando usuarios...</p>
+                        </div>
+                    ) : users.length > 0 ? (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                {users.map((u, index) => (
+                                    <div
+                                        key={u.id}
+                                        className="card-interactive p-5 animate-slide-up"
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-medium text-[var(--text-muted)]">
+                                                    {u.firstName?.[0]}{u.lastName?.[0]}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-medium">
+                                                        {u.firstName} {u.lastName}
+                                                    </h3>
+                                                    <p className="text-sm text-[var(--text-muted)]">{u.email}</p>
+                                                </div>
+                                            </div>
+                                            <span className={u.role === 0 ? 'badge-primary' : 'badge-secondary'}>
+                                                {u.role === 0 ? 'Admin' : 'User'}
+                                            </span>
                                         </div>
-                                        <div>
-                                            <h3 className="font-medium text-white">
-                                                {u.firstName} {u.lastName}
-                                            </h3>
-                                            <p className="text-sm text-gray-500">{u.email}</p>
+
+                                        <div className="flex gap-2 pt-4 border-t border-[var(--border-secondary)]">
+                                            <button
+                                                onClick={() => openModal('user', u)}
+                                                className="btn-secondary flex-1 text-xs py-2"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                                Editar
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(u.id)}
+                                                className="btn-danger flex-1 text-xs py-2"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Eliminar
+                                            </button>
                                         </div>
                                     </div>
-                                    <span className={u.role === 0 ? 'badge-primary' : 'badge-secondary'}>
-                                        {u.role === 0 ? 'Admin' : 'User'}
-                                    </span>
-                                </div>
+                                ))}
+                            </div>
 
-                                <div className="flex gap-2 pt-4 border-t border-gray-800">
+                            {/* Pagination Controls */}
+                            <div className="flex items-center justify-between border-t border-[var(--border-secondary)] pt-4">
+                                <p className="text-sm text-[var(--text-muted)]">
+                                    Página <span className="font-medium text-[var(--text-body)]">{page}</span> de <span className="font-medium text-[var(--text-body)]">{totalPages}</span>
+                                </p>
+                                <div className="flex gap-2">
                                     <button
-                                        onClick={() => openModal('user', u)}
-                                        className="btn-secondary flex-1 text-xs py-2"
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={page === 1}
+                                        className="btn-secondary px-3 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                        </svg>
-                                        Editar
+                                        Anterior
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(u.id)}
-                                        className="btn-danger flex-1 text-xs py-2"
+                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={page === totalPages}
+                                        className="btn-secondary px-3 py-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Eliminar
+                                        Siguiente
                                     </button>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <EmptyState
-                        title="Sin usuarios"
-                        description="No hay usuarios registrados aún"
-                        action={() => openModal('user')}
-                        actionLabel="Crear primer usuario"
-                    />
-                )
+                        </>
+                    ) : (
+                        <EmptyState
+                            title="Sin resultados"
+                            description={searchTerm ? `No se encontraron usuarios que coincidan con "${searchTerm}"` : "No hay usuarios registrados"}
+                            action={() => openModal('user')}
+                            actionLabel="Crear Usuario"
+                        />
+                    )}
+                </div>
             ) : (
                 <div className="card overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-800/50 text-gray-400 border-b border-gray-800">
+                            <thead className="bg-[var(--bg-secondary)] text-[var(--text-muted)] border-b border-[var(--border-secondary)]">
                                 <tr>
                                     <th className="px-6 py-3 font-medium">Usuario</th>
                                     <th className="px-6 py-3 font-medium">Acción</th>
@@ -289,15 +410,15 @@ const AdminView = ({ users, refresh, openModal }) => {
                                     <th className="px-6 py-3 font-medium">Duración</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-800">
+                            <tbody className="divide-y divide-[var(--border-secondary)]">
                                 {sessionLogs.map((log) => {
                                     const start = new Date(log.loginTime);
                                     const end = log.logoutTime ? new Date(log.logoutTime) : null;
                                     const duration = end ? Math.round((end - start) / 1000 / 60) + ' min' : '-';
 
                                     return (
-                                        <tr key={log.id} className="hover:bg-gray-800/30 transition-colors">
-                                            <td className="px-6 py-4 text-white">
+                                        <tr key={log.id} className="hover:bg-[var(--bg-hover)] transition-colors">
+                                            <td className="px-6 py-4">
                                                 {log.user?.username || 'Usuario eliminado'}
                                             </td>
                                             <td className="px-6 py-4">
@@ -306,16 +427,16 @@ const AdminView = ({ users, refresh, openModal }) => {
                                                     {log.action}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-gray-400 font-mono text-xs">
+                                            <td className="px-6 py-4 text-[var(--text-muted)] font-mono text-xs">
                                                 {log.ipAddress}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-300">
+                                            <td className="px-6 py-4 text-[var(--text-body)]">
                                                 {start.toLocaleString()}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-300">
+                                            <td className="px-6 py-4 text-[var(--text-body)]">
                                                 {end ? end.toLocaleString() : <span className="text-green-500 text-xs">En línea</span>}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-400">
+                                            <td className="px-6 py-4 text-[var(--text-muted)]">
                                                 {duration}
                                             </td>
                                         </tr>
@@ -324,7 +445,7 @@ const AdminView = ({ users, refresh, openModal }) => {
                             </tbody>
                         </table>
                         {sessionLogs.length === 0 && (
-                            <div className="p-8 text-center text-gray-500">
+                            <div className="p-8 text-center text-[var(--text-muted)]">
                                 No hay registros de actividad
                             </div>
                         )}
@@ -357,8 +478,8 @@ const UserView = ({ profile, refresh, openModal }) => {
         <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
             {/* Profile Card */}
             <div className="card p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-                    <h2 className="text-lg font-semibold text-white">Mi Perfil</h2>
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border-secondary)]">
+                    <h2 className="text-lg font-semibold">Mi Perfil</h2>
                     <button
                         onClick={() => openModal('user', profile)}
                         className="btn-ghost text-sm"
@@ -377,21 +498,21 @@ const UserView = ({ profile, refresh, openModal }) => {
                         </span>
                     </div>
                     <div>
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-xl font-semibold">
                             {profile.firstName} {profile.lastName}
                         </h3>
-                        <p className="text-gray-500">{profile.email}</p>
+                        <p className="text-[var(--text-muted)]">{profile.email}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-gray-800/50 border border-gray-800">
+                    <div className="p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-secondary)]">
                         <span className="label-uppercase">Nombre</span>
-                        <p className="text-white font-medium">{profile.firstName}</p>
+                        <p className="font-medium">{profile.firstName}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-gray-800/50 border border-gray-800">
+                    <div className="p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-secondary)]">
                         <span className="label-uppercase">Apellido</span>
-                        <p className="text-white font-medium">{profile.lastName}</p>
+                        <p className="font-medium">{profile.lastName}</p>
                     </div>
                 </div>
             </div>
@@ -400,11 +521,11 @@ const UserView = ({ profile, refresh, openModal }) => {
             <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l9-5-9-5-9 5 9 5z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                         </svg>
-                        <h2 className="text-lg font-semibold text-white">Mis Estudios</h2>
+                        <h2 className="text-lg font-semibold">Mis Estudios</h2>
                     </div>
                     <button
                         onClick={() => openModal('study')}
@@ -422,11 +543,11 @@ const UserView = ({ profile, refresh, openModal }) => {
                         profile.studies.map((s, index) => (
                             <div
                                 key={s.id}
-                                className="group flex items-center justify-between p-4 rounded-xl bg-gray-800/30 border border-gray-800 hover:border-gray-700 transition-all"
+                                className="group flex items-center justify-between p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-secondary)] hover:border-[var(--border-card)] transition-all"
                             >
                                 <div>
-                                    <h4 className="font-medium text-white">{s.title}</h4>
-                                    <p className="text-sm text-gray-500">
+                                    <h4 className="font-medium">{s.title}</h4>
+                                    <p className="text-sm text-[var(--text-muted)]">
                                         {s.description}
                                     </p>
                                 </div>
@@ -453,8 +574,8 @@ const UserView = ({ profile, refresh, openModal }) => {
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-8 text-gray-500">
-                            <svg className="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="text-center py-8 text-[var(--text-muted)]">
+                            <svg className="w-12 h-12 mx-auto mb-3 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 14l9-5-9-5-9 5 9 5z" />
                             </svg>
                             <p className="text-sm">No hay estudios registrados</p>
@@ -467,11 +588,11 @@ const UserView = ({ profile, refresh, openModal }) => {
             <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <h2 className="text-lg font-semibold text-white">Mi Dirección</h2>
+                        <h2 className="text-lg font-semibold">Mi Dirección</h2>
                     </div>
                     {!profile.address && (
                         <button
@@ -487,12 +608,12 @@ const UserView = ({ profile, refresh, openModal }) => {
                 </div>
 
                 {profile.address ? (
-                    <div className="group flex items-center justify-between p-4 rounded-xl bg-gray-800/30 border border-gray-800 hover:border-gray-700 transition-all">
+                    <div className="group flex items-center justify-between p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-secondary)] hover:border-[var(--border-card)] transition-all">
                         <div>
-                            <p className="font-medium text-white">
+                            <p className="font-medium">
                                 {profile.address.street}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-[var(--text-muted)]">
                                 {profile.address.city}, {profile.address.country} {profile.address.zipCode && `(${profile.address.zipCode})`}
                             </p>
                         </div>
@@ -506,8 +627,8 @@ const UserView = ({ profile, refresh, openModal }) => {
                         </button>
                     </div>
                 ) : (
-                    <div className="text-center py-8 text-gray-500">
-                        <svg className="w-12 h-12 mx-auto mb-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="text-center py-8 text-[var(--text-muted)]">
+                        <svg className="w-12 h-12 mx-auto mb-3 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         </svg>
                         <p className="text-sm">No hay dirección registrada</p>
@@ -525,10 +646,10 @@ const StatCard = ({ label, value, icon }) => (
     <div className="card p-4">
         <div className="flex items-center justify-between">
             <div>
-                <p className="text-sm text-gray-500">{label}</p>
-                <p className="text-2xl font-semibold text-white mt-1">{value}</p>
+                <p className="text-sm text-[var(--text-muted)]">{label}</p>
+                <p className="text-2xl font-semibold mt-1">{value}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center text-gray-500">
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-muted)]">
                 {icon}
             </div>
         </div>
@@ -537,13 +658,13 @@ const StatCard = ({ label, value, icon }) => (
 
 const EmptyState = ({ title, description, action, actionLabel }) => (
     <div className="card p-12 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-gray-800 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--bg-secondary)] flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         </div>
-        <h3 className="text-lg font-medium text-white mb-1">{title}</h3>
-        <p className="text-gray-500 text-sm mb-6">{description}</p>
+        <h3 className="text-lg font-medium mb-1">{title}</h3>
+        <p className="text-[var(--text-muted)] text-sm mb-6">{description}</p>
         {action && (
             <button onClick={action} className="btn-primary">
                 {actionLabel}
