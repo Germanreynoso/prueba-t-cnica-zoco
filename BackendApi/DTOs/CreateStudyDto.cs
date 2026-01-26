@@ -6,9 +6,9 @@ public class CreateStudyDto
 {
     [Required]
     [MaxLength(200)]
-    public string Title { get; set; }
+    public required string Title { get; set; }
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     [Required]
     public int UserId { get; set; }

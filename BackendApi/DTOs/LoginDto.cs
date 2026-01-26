@@ -6,9 +6,9 @@ public class LoginDto
 {
     [Required]
     [MaxLength(100)]
-    public string UsernameOrEmail { get; set; }
+    public required string UsernameOrEmail { get; set; }
 
     [Required]
     [MinLength(6)]
-    public string Password { get; set; }
+    public required string Password { get; set; }
 }

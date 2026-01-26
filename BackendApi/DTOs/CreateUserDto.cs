@@ -7,21 +7,21 @@ public class CreateUserDto
 {
     [Required]
     [MaxLength(50)]
-    public string Username { get; set; }
+    public required string Username { get; set; }
 
     [Required]
     [EmailAddress]
     [MaxLength(100)]
-    public string Email { get; set; }
+    public required string Email { get; set; }
 
     [Required]
-    public string Password { get; set; } // Plain password, will be hashed in service
+    public required string Password { get; set; } // Plain password, will be hashed in service
 
     [MaxLength(50)]
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     [MaxLength(50)]
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     [Required]
     public UserRole Role { get; set; }

@@ -26,7 +26,7 @@ public class AuthorizationMiddleware
             var authorizeData = endpoint.Metadata.GetOrderedMetadata<Microsoft.AspNetCore.Authorization.IAuthorizeData>();
             var requiredRoles = authorizeData
                 .Where(ad => !string.IsNullOrEmpty(ad.Roles))
-                .SelectMany(ad => ad.Roles.Split(','))
+                .SelectMany(ad => ad.Roles!.Split(','))
                 .Select(role => role.Trim())
                 .ToList();
 
