@@ -1,4 +1,4 @@
-# 🚀 Prueba Técnica - Full Stack Developer (.NET + React)
+#  Prueba Técnica - Full Stack Developer (.NET + React)
 
 🔗 **Frontend en producción:**  
 https://prueba-tecnica-zoco.netlify.app/
@@ -8,15 +8,15 @@ Aplicación web Full Stack para la gestión de usuarios, estudios y direcciones,
 La solución cumple con todos los requisitos funcionales, técnicos y de seguridad solicitados en la consigna.
 ----
 
-## 📋 Características Principales
+##  Características Principales
 
-### 🧱 Backend (.NET 8)
+###  Backend (.NET 8)
 - **Seguridad:** Autenticación JWT y Middleware de Autorización basado en Roles y Propiedad de Recursos.
 - **Base de Datos:** SQL Server con Entity Framework Core (Code First).
 - **Auditoría:** Sistema de `SessionLogs` que registra inicios y cierres de sesión, duración.
 - **Documentación:** API completamente documentada con Swagger UI.
 
-### 🎨 Frontend (React + Vite)
+###  Frontend (React + Vite)
 - **UI Moderna:** Diseño responsivo y estético utilizando **Tailwind CSS**.
 - **Gestión de Estado:** Uso de Context API para manejo global de autenticación y sesión.
 - **UX:** Feedback visual con spinners de carga, modales animados y notificaciones.
@@ -24,7 +24,7 @@ La solución cumple con todos los requisitos funcionales, técnicos y de segurid
 
 ---
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 | Área | Tecnologías |
 | :--- | :--- |
@@ -34,7 +34,7 @@ La solución cumple con todos los requisitos funcionales, técnicos y de segurid
 
 ---
 
-## ⚙️ Guía de Instalación y Ejecución
+##  Guía de Instalación y Ejecución
 
 ### 1. Requisitos Previos
 Asegurarse de tener instalado:
@@ -76,8 +76,8 @@ Asegurarse de tener instalado:
    ```bash
    dotnet run
    ```
-   🚀 La API estará disponible en: `http://localhost:5152`
-   📄 Documentación Swagger: `http://localhost:5152/index.html`
+    La API estará disponible en: `http://localhost:5152`
+       Documentación Swagger: `http://localhost:5152/index.html`
 
 ### 3. Configuración del Frontend
 
@@ -101,11 +101,11 @@ Asegurarse de tener instalado:
    ```bash
    npm run dev
    ```
-   🌐 Abre tu navegador en la URL que muestra la terminal (usualmente `http://localhost:5173`).
+    Abre tu navegador en la URL que muestra la terminal (usualmente `http://localhost:5173`).
 
----
 
-## 🔑 Usuarios de Prueba (Seed Data)
+
+##  Usuarios de Prueba (Seed Data)
 
 La base de datos se inicializa automáticamente con los siguientes usuarios para facilitar las pruebas:
 
@@ -116,7 +116,7 @@ La base de datos se inicializa automáticamente con los siguientes usuarios para
 
 ---
 
-## 📂 Estructura del Proyecto
+##  Estructura del Proyecto
 
 ```text
 prueba-t-cnica-zoco/
@@ -143,7 +143,7 @@ prueba-t-cnica-zoco/
 
 ---
 
-## 🧪 Endpoints Principales
+##  Endpoints Principales
 
 Puedes probar todos estos endpoints directamente desde Swagger UI.
 
@@ -155,9 +155,9 @@ Puedes probar todos estos endpoints directamente desde Swagger UI.
 
 ---
 
-## ✨ Notas Adicionales
+##  Notas Adicionales
 - **Validación de Roles:** El backend valida estrictamente que un usuario normal no pueda modificar datos de otros usuarios, incluso si intenta manipular las peticiones.
 - **Sesiones:** El sistema registra automáticamente cuándo un usuario inicia sesión y cuándo la cierra (o cuando expira su token), permitiendo auditoría de accesos.
 
 ---
-*Desarrollado por Germán Gonzalo Reynoso*
+Desarrollado por Germán Gonzalo Reynoso
